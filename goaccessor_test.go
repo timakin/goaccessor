@@ -1,6 +1,7 @@
 package goaccessor_test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/timakin/goaccessor"
@@ -9,5 +10,5 @@ import (
 
 func Test(t *testing.T) {
 	testdata := analysistest.TestData()
-	analysistest.Run(t, testdata, goaccessor.Analyzer, "testpackage")
+	log.Printf("%+v", analysistest.Run(t, testdata, goaccessor.Analyzer, "testpackage")[0])
 }
