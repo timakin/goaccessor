@@ -21,6 +21,12 @@ var Analyzer = &analysis.Analyzer{
 }
 
 const (
+	signYear = 2018
+
+	fileSuffix = "-accessors.go"
+)
+
+var (
 	// blacklistStruct lists structs to skip.
 	blacklistStruct = map[string]bool{
 		"Client":     true,
@@ -56,11 +62,10 @@ func run(pass *analysis.Pass) (interface{}, error) {
 					return
 				}
 
-							// Check if the struct is blacklisted.
-							if blacklistStruct[ts.Name.Name] {
-								logf("Struct %v is blacklisted; skipping.", ts.Name)
-								continue
-							}
+				// Check if the struct is blacklisted.
+				if blacklistStruct[ts.Name.Name] {
+					return
+				}
 
 				stractMap[ts.Name.String()] = st
 			}
@@ -104,10 +109,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 //"text/template"
 //)
 //
-//const (
-//	fileSuffix = "-accessors.go"
-//)
-//
 //var (
 //	verbose = flag.Bool("v", false, "Print verbose log messages")
 //
@@ -119,14 +120,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 //		"Client.SetCredential":      true,
 //		"ErrorResponse.GetResponse": true,
 //	}
-//	// blacklistStruct lists structs to skip.
-//	blacklistStruct = map[string]bool{
-//		"Client":     true,
-//		"Credential": true,
-//	}
-//
-//	signYear = 2018
-//)
 //
 //func logf(fmt string, args ...interface{}) {
 //	if *verbose {
