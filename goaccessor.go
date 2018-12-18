@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
-	"golang.org/x/tools/go/ast/inspector"
+	//"golang.org/x/tools/go/ast/inspector"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -39,45 +39,81 @@ type StructMap map[string]*ast.StructType
 const doc = "goaccessor analyzer parses struct values which can be used for generating the accessors to guard null pointer access."
 
 func run(pass *analysis.Pass) (interface{}, error) {
-	inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
+	for _, f := range pass.Files {
+		for _, decl := range f.Decls {
+			if decl, ok := decl.(*ast.GenDecl); ok {
+				for _, spec := range decl.Specs {
+					ts, ok := spec.(*ast.TypeSpec)
+					if !ok {
+						continue
+					}
+					if !ts.Name.IsExported() {
+						continue
+					}
+					st, ok := ts.Type.(*ast.StructType)
+					if !ok {
+						continue
+					}
 
-	nodeFilter := []ast.Node{
-		(*ast.GenDecl)(nil),
-	}
+					// Check if the struct is blacklisted.
+					if blacklistStruct[ts.Name.Name] {
+						continue
+					}
 
-	var stractMap = StructMap{}
-	inspect.Preorder(nodeFilter, func(n ast.Node) {
-		switch n := n.(type) {
-		case *ast.GenDecl:
-			for _, spec := range n.Specs {
-				ts, ok := spec.(*ast.TypeSpec)
-				if !ok {
-					return
-				}
-				if !ts.Name.IsExported() {
-					return
-				}
-				st, ok := ts.Type.(*ast.StructType)
-				if !ok {
-					return
-				}
-
-				// Check if the struct is blacklisted.
-				if blacklistStruct[ts.Name.Name] {
-					return
+					log.Printf("%+v", st)
 				}
 
-				stractMap[ts.Name.String()] = st
+				//for _, spec := range decl.Specs {
+				//
+				//
+				//}
+
+				//if obj, ok := pass.TypesInfo.Defs[decl.Name].(*types.Func); ok {
+				//	pass.ExportObjectFact(obj, new(foundFact))
+				//}
 			}
 		}
-
-		return
-	})
-
-	for tName, _ := range stractMap {
-		log.Println(tName)
 	}
-	return stractMap, nil
+	//inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
+	//
+	//nodeFilter := []ast.Node{
+	//	(*ast.GenDecl)(nil),
+	//}
+	//
+	//var stractMap = StructMap{}
+	//inspect.Preorder(nodeFilter, func(n ast.Node) {
+	//	switch n := n.(type) {
+	//	case *ast.GenDecl:
+	//		for _, spec := range n.Specs {
+	//			ts, ok := spec.(*ast.TypeSpec)
+	//			if !ok {
+	//				return
+	//			}
+	//			if !ts.Name.IsExported() {
+	//				return
+	//			}
+	//			st, ok := ts.Type.(*ast.StructType)
+	//			if !ok {
+	//				return
+	//			}
+	//
+	//			// Check if the struct is blacklisted.
+	//			if blacklistStruct[ts.Name.Name] {
+	//				return
+	//			}
+	//
+	//			stractMap[ts.Name.String()] = st
+	//		}
+	//	}
+	//
+	//	return
+	//})
+	//
+	//for tName, _ := range stractMap {
+	//	log.Println(tName)
+	//}
+	//return stractMap, nil
+	return nil, nil
 }
 
 // Copyright 2018 The go-vrchat AUTHORS. All rights reserved.
@@ -384,4 +420,3 @@ func run(pass *analysis.Pass) (interface{}, error) {
 // }
 // {{end}}
 // {{end}}
-`
