@@ -83,12 +83,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 							continue
 						}
 
-						// log.Printf("%v", pass.TypesInfo.Defs[fieldName])
-						log.Printf("%+v", pass.TypesInfo.TypeOf(se))
-						log.Printf("%+v", se)
-						log.Printf("%+v", se.X)
-						log.Printf("%v", field.Names)
-						// log.Printf("%v", se.X)
+						if id, ok := se.X.(*ast.Ident); ok {
+							log.Printf("%+v", pass.TypesInfo.Types[id].Type)
+						}
 
 						// pass.TypesInfo.Defs[se.X.]
 						// switch x := se.X.(type) {
