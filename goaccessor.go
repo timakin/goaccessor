@@ -56,6 +56,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 					if !ts.Name.IsExported() {
 						continue
 					}
+
 					st, ok := ts.Type.(*ast.StructType)
 					if !ok {
 						continue
@@ -106,15 +107,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 					// log.Printf("%+v", st)
 				}
-
-				// 			//for _, spec := range decl.Specs {
-				// 			//
-				// 			//
-				// 			//}
-
-				// 			//if obj, ok := pass.TypesInfo.Defs[decl.Name].(*types.Func); ok {
-				// 			//	pass.ExportObjectFact(obj, new(foundFact))
-				// 			//}
 			}
 		}
 	}
