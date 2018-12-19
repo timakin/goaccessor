@@ -38,7 +38,7 @@ type User struct {
 	Username                       *string   `json:"username"`
 }
 
-type credential struct {
+type BasicCredential struct {
 	username string `json:"username"`
 	password string `json:"password"`
 }
@@ -90,9 +90,9 @@ func (s *AvatarService) Choose(ctx context.Context, id string) error {
 	return nil
 }
 
-// AvatarListOptions specifies the optional parameters to the
-// Avatar.List method.
-type AvatarListOptions struct {
+// avatarListOptions specifies the optional parameters to the
+// avatar.List method.
+type avatarListOptions struct {
 	// Order specifies the direction to sort avatars. Possible values are: ascending, descending.
 	Order string `url:"order,omitempty"`
 
@@ -106,6 +106,6 @@ type AvatarListOptions struct {
 	ReleaseStatus string `url:"releaseStatus,omitempty"`
 }
 
-func (s *AvatarService) List(ctx context.Context, opt *AvatarListOptions) error {
+func (s *AvatarService) List(ctx context.Context, opt *avatarListOptions) error {
 	return nil
 }

@@ -1,13 +1,13 @@
 package goaccessor
 
 import (
+	"fmt"
 	"go/ast"
 	"log"
 	"reflect"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
-	//"golang.org/x/tools/go/ast/inspector"
 )
 
 var Analyzer = &analysis.Analyzer{
@@ -29,8 +29,13 @@ const (
 var (
 	// blacklistStruct lists structs to skip.
 	blacklistStruct = map[string]bool{
-		"Client":     true,
-		"credential": true,
+		"Client":          true,
+		"BasicCredential": true,
+	}
+
+	blacklistStructMethod = map[string]bool{
+		"Client.GetBaseURL":    true,
+		"Client.SetCredential": true,
 	}
 )
 
@@ -39,8 +44,67 @@ type StructMap map[string]*ast.StructType
 const doc = "goaccessor analyzer parses struct values which can be used for generating the accessors to guard null pointer access."
 
 func run(pass *analysis.Pass) (interface{}, error) {
+	// inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
+
+	// nodeFilter := []ast.Node{
+	// 	// (*ast.)(nil),
+	// 	(*ast.StructType)(nil),
+	// }
+	// inspect.Preorder(nodeFilter, func(n ast.Node) {
+	// 	ts := pass.TypesInfo.Types[n.(*ast.StructType)].Type.(*types.Struct)
+	// 	if !ts.Name.IsExported() {
+	// 		return
+	// 	}
+
+	// 	// Check if the struct is blacklisted.
+	// 	if blacklistStruct[ts.Name.Name] {
+	// 		return
+	// 	}
+
+	// 	for _, field := range ts.Fields.List {
+	// 		se, ok := field.Type.(*ast.StarExpr)
+	// 		if len(field.Names) == 0 || !ok {
+	// 			continue
+	// 		}
+
+	// 		fieldName := field.Names[0]
+	// 		// Skip unexported identifiers.
+	// 		if !fieldName.IsExported() {
+	// 			continue
+	// 		}
+	// 		// Check if "struct.method" is blacklisted.
+	// 		if key := fmt.Sprintf("%v.Get%v", ts.Name, fieldName); blacklistStructMethod[key] {
+	// 			// logf("Method %v is blacklisted; skipping.", key)
+	// 			continue
+	// 		}
+
+	// 		// log.Printf("%v", pass.TypesInfo.Defs[fieldName])
+	// 		log.Printf("%+v", pass.TypesInfo.TypeOf(se))
+	// 		log.Printf("%+v", se)
+	// 		log.Printf("%+v", se.X)
+	// 		log.Printf("%v", field.Names)
+	// 		// log.Printf("%v", se.X)
+
+	// 		// pass.TypesInfo.Defs[se.X.]
+	// 		// switch x := se.X.(type) {
+	// 		// case *ast.ArrayType:
+	// 		// 	t.addArrayType(x, ts.Name.String(), fieldName.String())
+	// 		// case *ast.Ident:
+	// 		// 	t.addIdent(x, ts.Name.String(), fieldName.String())
+	// 		// case *ast.MapType:
+	// 		// 	t.addMapType(x, ts.Name.String(), fieldName.String())
+	// 		// case *ast.SelectorExpr:
+	// 		// 	t.addSelectorExpr(x, ts.Name.String(), fieldName.String())
+	// 		// default:
+	// 		// 	logf("processAST: type %q, field %q, unknown %T: %+v", ts.Name, fieldName, x, x)
+	// 		// }
+	// 	}
+
+	// })
+
 	for _, f := range pass.Files {
 		for _, decl := range f.Decls {
+			// log.Printf("%+v", pass.TypesInfo.TypeOf(decl))
 			if decl, ok := decl.(*ast.GenDecl); ok {
 				for _, spec := range decl.Specs {
 					ts, ok := spec.(*ast.TypeSpec)
@@ -60,59 +124,62 @@ func run(pass *analysis.Pass) (interface{}, error) {
 						continue
 					}
 
-					log.Printf("%+v", st)
+					for _, field := range st.Fields.List {
+						se, ok := field.Type.(*ast.StarExpr)
+						if len(field.Names) == 0 || !ok {
+							continue
+						}
+
+						fieldName := field.Names[0]
+						// Skip unexported identifiers.
+						if !fieldName.IsExported() {
+							continue
+						}
+						// Check if "struct.method" is blacklisted.
+						if key := fmt.Sprintf("%v.Get%v", ts.Name, fieldName); blacklistStructMethod[key] {
+							// logf("Method %v is blacklisted; skipping.", key)
+							continue
+						}
+
+						// log.Printf("%v", pass.TypesInfo.Defs[fieldName])
+						log.Printf("%+v", pass.TypesInfo.TypeOf(se))
+						log.Printf("%+v", se)
+						log.Printf("%+v", se.X)
+						log.Printf("%v", field.Names)
+						// log.Printf("%v", se.X)
+
+						// pass.TypesInfo.Defs[se.X.]
+						// switch x := se.X.(type) {
+						// case *ast.ArrayType:
+						// 	t.addArrayType(x, ts.Name.String(), fieldName.String())
+						// case *ast.Ident:
+						// 	t.addIdent(x, ts.Name.String(), fieldName.String())
+						// case *ast.MapType:
+						// 	t.addMapType(x, ts.Name.String(), fieldName.String())
+						// case *ast.SelectorExpr:
+						// 	t.addSelectorExpr(x, ts.Name.String(), fieldName.String())
+						// default:
+						// 	logf("processAST: type %q, field %q, unknown %T: %+v", ts.Name, fieldName, x, x)
+						// }
+					}
+
+					// pass.TypesInfo.Defs[st.]
+
+					// log.Printf("%+v", st)
 				}
 
-				//for _, spec := range decl.Specs {
-				//
-				//
-				//}
+				// 			//for _, spec := range decl.Specs {
+				// 			//
+				// 			//
+				// 			//}
 
-				//if obj, ok := pass.TypesInfo.Defs[decl.Name].(*types.Func); ok {
-				//	pass.ExportObjectFact(obj, new(foundFact))
-				//}
+				// 			//if obj, ok := pass.TypesInfo.Defs[decl.Name].(*types.Func); ok {
+				// 			//	pass.ExportObjectFact(obj, new(foundFact))
+				// 			//}
 			}
 		}
 	}
-	//inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
-	//
-	//nodeFilter := []ast.Node{
-	//	(*ast.GenDecl)(nil),
-	//}
-	//
-	//var stractMap = StructMap{}
-	//inspect.Preorder(nodeFilter, func(n ast.Node) {
-	//	switch n := n.(type) {
-	//	case *ast.GenDecl:
-	//		for _, spec := range n.Specs {
-	//			ts, ok := spec.(*ast.TypeSpec)
-	//			if !ok {
-	//				return
-	//			}
-	//			if !ts.Name.IsExported() {
-	//				return
-	//			}
-	//			st, ok := ts.Type.(*ast.StructType)
-	//			if !ok {
-	//				return
-	//			}
-	//
-	//			// Check if the struct is blacklisted.
-	//			if blacklistStruct[ts.Name.Name] {
-	//				return
-	//			}
-	//
-	//			stractMap[ts.Name.String()] = st
-	//		}
-	//	}
-	//
-	//	return
-	//})
-	//
-	//for tName, _ := range stractMap {
-	//	log.Println(tName)
-	//}
-	//return stractMap, nil
+
 	return nil, nil
 }
 
