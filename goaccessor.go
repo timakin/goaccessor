@@ -84,12 +84,12 @@ func run(pass *analysis.Pass) (interface{}, error) {
 							continue
 						}
 
-						if id, ok := se.X.(*ast.Ident); ok {
-							log.Printf("%+v", pass.TypesInfo.Types[id].Type)
-						}
+						log.Printf("%+v", pass.TypesInfo.Types[se.X].Type)
 
-						// pass.TypesInfo.Defs[se.X.]
-						// switch x := se.X.(type) {
+						switch x := se.X.(type) {
+						default:
+							log.Printf("processAST: type %q, field %q, unknown %T: %+v", ts.Name, fieldName, x, x)
+						}
 						// case *ast.ArrayType:
 						// 	t.addArrayType(x, ts.Name.String(), fieldName.String())
 						// case *ast.Ident:
@@ -98,8 +98,6 @@ func run(pass *analysis.Pass) (interface{}, error) {
 						// 	t.addMapType(x, ts.Name.String(), fieldName.String())
 						// case *ast.SelectorExpr:
 						// 	t.addSelectorExpr(x, ts.Name.String(), fieldName.String())
-						// default:
-						// 	logf("processAST: type %q, field %q, unknown %T: %+v", ts.Name, fieldName, x, x)
 						// }
 					}
 
