@@ -61,25 +61,27 @@ type Avatar struct {
 	AssetURL       *string   `json:"assetUrl"`
 	AssetURLObject struct {
 	} `json:"assetUrlObject"`
-	ImageURL          *string `json:"imageUrl"`
-	ThumbnailImageURL *string `json:"thumbnailImageUrl"`
-	ReleaseStatus     *string `json:"releaseStatus"`
-	Version           *int    `json:"version"`
-	Featured          *bool   `json:"featured"`
-	UnityPackages     []struct {
-		ID              *string `json:"id"`
-		AssetURL        *string `json:"assetUrl"`
-		UnityVersion    *string `json:"unityVersion"`
-		UnitySortNumber *int    `json:"unitySortNumber"`
-		AssetVersion    *int    `json:"assetVersion"`
-		Platform        *string `json:"platform"`
-	} `json:"unityPackages"`
-	UnityPackageUpdated   *bool   `json:"unityPackageUpdated"`
-	UnityPackageURL       *string `json:"unityPackageUrl"`
+	ImageURL              *string         `json:"imageUrl"`
+	ThumbnailImageURL     *string         `json:"thumbnailImageUrl"`
+	ReleaseStatus         *string         `json:"releaseStatus"`
+	Version               *int            `json:"version"`
+	Featured              *bool           `json:"featured"`
+	UnityPackages         []*UnityPackage `json:"unityPackages"`
+	UnityPackageUpdated   *bool           `json:"unityPackageUpdated"`
+	UnityPackageURL       *string         `json:"unityPackageUrl"`
 	UnityPackageURLObject struct {
 	} `json:"unityPackageUrlObject"`
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
+}
+
+type UnityPackage struct {
+	ID              *string `json:"id"`
+	AssetURL        *string `json:"assetUrl"`
+	UnityVersion    *string `json:"unityVersion"`
+	UnitySortNumber *int    `json:"unitySortNumber"`
+	AssetVersion    *int    `json:"assetVersion"`
+	Platform        *string `json:"platform"`
 }
 
 func (s *AvatarService) GetByID(ctx context.Context, id string) error {
