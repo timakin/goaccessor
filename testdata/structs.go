@@ -10,10 +10,6 @@ var (
 		"Client",
 		"BasicCredential",
 	}
-
-	blacklistStructMethod = []string{
-		"User.GetUnsubscribe",
-	}
 )
 
 // User represents user's in-game information
@@ -45,13 +41,13 @@ type User struct {
 	StatusDescription              *string   `json:"statusDescription"`
 	SteamDetails                   struct{}  `json:"steamDetails"`
 	Tags                           []string  `json:"tags"`
-	Unsubscribe                    *bool     `json:"unsubscribe"`
+	Unsubscribe                    *bool     `json:"unsubscribe" accessor:"ignore"`
 	Username                       *string   `json:"username"`
 }
 
 type BasicCredential struct {
-	username string `json:"username"`
-	password string `json:"password"`
+	Username *string `json:"username"`
+	Password *string `json:"password"`
 }
 
 type service struct {

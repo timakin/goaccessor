@@ -21,6 +21,7 @@ import (
 
 const (
 	fileSuffix = "-accessors.go"
+	ignoreTag  = `accessor:"ignore"`
 )
 
 var (
@@ -91,12 +92,8 @@ type accessorInfo struct {
 var (
 	// blacklistStruct lists structs to skip.
 	blacklistStruct = map[string]bool{
-		"Client":          true,
-		"BasicCredential": true,
-	}
-
-	blacklistStructMethod = map[string]bool{
-		"User.GetUnsubscribe": true,
+		//"Client":          true,
+		//"BasicCredential": true,
 	}
 )
 
@@ -141,10 +138,8 @@ func ParseAccessors(files []*ast.File) (*accessorInfo, error) {
 				if !fieldName.IsExported() {
 					continue
 				}
-				// Check if "struct.method" is blacklisted.
-				key := fmt.Sprintf("%v.Get%v", ts.Name, fieldName)
-				log.Println(key)
-				if blacklistStructMethod[key] {
+
+				if strings.Contains(field.Tag.Value, ignoreTag) {
 					continue
 				}
 
