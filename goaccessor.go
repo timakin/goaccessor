@@ -22,7 +22,7 @@ import (
 const (
 	fileSuffix     = "-accessors.go"
 	ignoreFieldTag = `accessor:"ignore"`
-	ignorePkgTag   = "+ignore_structs"
+	ignorePkgTag   = `+ignore_structs`
 )
 
 var (
@@ -61,8 +61,10 @@ func main() {
 
 			for _, cg := range f.Comments {
 				for _, c := range cg.List {
-					if strings.HasPrefix(c.Text, ignorePkgTag) {
-						structsComment := strings.TrimPrefix(strings.Replace(c.Text, " ", "", -1), ignorePkgTag)
+					packed := strings.Replace(strings.Replace(c.Text, " ", "", -1), "/", "", -1)
+
+					if strings.HasPrefix(packed, ignorePkgTag) {
+						structsComment := strings.TrimPrefix(packed, ignorePkgTag)
 						for _, st := range strings.Split(structsComment, ",") {
 							ignoreStructs = append(ignoreStructs, st)
 						}
@@ -70,6 +72,7 @@ func main() {
 				}
 			}
 		}
+		log.Printf("%+v", ignoreStructs)
 		ap := &AccessorParser{
 			IgnoreStructs: ignoreStructs,
 		}
@@ -161,7 +164,7 @@ func (p *AccessorParser) ParseAccessors(files []*ast.File) (*accessorInfo, error
 					continue
 				}
 
-				if strings.Contains(field.Tag.Value, ignoreFieldTag) {
+				if field.Tag != nil && strings.Contains(field.Tag.Value, ignoreFieldTag) {
 					continue
 				}
 
