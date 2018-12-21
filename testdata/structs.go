@@ -1,15 +1,9 @@
+// +ignore_structs BasicCredential,Client
 package testdata
 
 import (
 	"context"
 	"time"
-)
-
-var (
-	blacklistStructs = []string{
-		"Client",
-		"BasicCredential",
-	}
 )
 
 // User represents user's in-game information
@@ -45,6 +39,7 @@ type User struct {
 	Username                       *string   `json:"username"`
 }
 
+// BasicCredential represents basic credentials to access API
 type BasicCredential struct {
 	Username *string `json:"username"`
 	Password *string `json:"password"`

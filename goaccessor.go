@@ -40,7 +40,7 @@ func main() {
 		dirPath = os.Args[1]
 	}
 
-	pkgs, err := parser.ParseDir(fset, dirPath, sourceFilter, 0)
+	pkgs, err := parser.ParseDir(fset, dirPath, sourceFilter, parser.ParseComments)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -52,11 +52,27 @@ func main() {
 			Year:     time.Now().Year(),
 			Package:  pkgName,
 		}
+
 		var files []*ast.File
+		var ignoreStructs []string
 		for _, f := range pkg.Files {
 			files = append(files, f)
+
+			for _, cg := range f.Comments {
+				for _, c := range cg.List {
+					if strings.HasPrefix(c.Text, "+ignore_structs") {
+						structsComment := strings.TrimPrefix(strings.Replace(c.Text, " ", "", -1), "+ignore_structs")
+						for _, st := range strings.Split(structsComment, ",") {
+							ignoreStructs = append(ignoreStructs, st)
+						}
+					}
+				}
+			}
 		}
-		ai, err := ParseAccessors(files)
+		ap := &AccessorParser{
+			IgnoreStructs: ignoreStructs,
+		}
+		ai, err := ap.ParseAccessors(files)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -89,16 +105,12 @@ type accessorInfo struct {
 	Getters getters
 }
 
-var (
-	// blacklistStruct lists structs to skip.
-	blacklistStruct = map[string]bool{
-		//"Client":          true,
-		//"BasicCredential": true,
-	}
-)
+type AccessorParser struct {
+	IgnoreStructs []string
+}
 
 // ParseAccessors parses struct values which can be used for generating the accessors to guard null pointer access."
-func ParseAccessors(files []*ast.File) (*accessorInfo, error) {
+func (p *AccessorParser) ParseAccessors(files []*ast.File) (*accessorInfo, error) {
 	inspect := inspector.New(files)
 
 	nodeFilter := []ast.Node{
@@ -108,6 +120,15 @@ func ParseAccessors(files []*ast.File) (*accessorInfo, error) {
 	ai := &accessorInfo{
 		Getters: []*getter{},
 		Imports: map[string]string{},
+	}
+
+	isIgnoreStruct := func(st string) bool {
+		for _, ig := range p.IgnoreStructs {
+			if ig == st {
+				return true
+			}
+		}
+		return false
 	}
 
 	inspect.Preorder(nodeFilter, func(n ast.Node) {
@@ -123,7 +144,7 @@ func ParseAccessors(files []*ast.File) (*accessorInfo, error) {
 			}
 
 			// Check if the struct is blacklisted.
-			if blacklistStruct[ts.Name.Name] {
+			if isIgnoreStruct(ts.Name.Name) {
 				return
 			}
 
@@ -266,7 +287,6 @@ func (t *dumper) dump() error {
 
 	// Sort getters by ReceiverType.FieldName.
 	sort.Slice(t.Getters, func(i, j int) bool {
-		//log.Printf("%+v", t.Getters[i])
 		return t.Getters[i].sortVal < t.Getters[j].sortVal
 	})
 
