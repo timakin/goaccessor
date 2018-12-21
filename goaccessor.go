@@ -72,7 +72,7 @@ func main() {
 				}
 			}
 		}
-		log.Printf("%+v", ignoreStructs)
+
 		ap := &AccessorParser{
 			IgnoreStructs: ignoreStructs,
 		}
