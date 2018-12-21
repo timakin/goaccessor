@@ -14,13 +14,13 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/tools/go/ast/inspector"
 )
 
 const (
 	fileSuffix = "-accessors.go"
-	signYear   = 2018
 )
 
 var (
@@ -48,7 +48,7 @@ func main() {
 	for pkgName, pkg := range pkgs {
 		d := &dumper{
 			filename: pkgName + fileSuffix,
-			Year:     signYear,
+			Year:     time.Now().Year(),
 			Package:  pkgName,
 		}
 		var files []*ast.File
@@ -96,8 +96,7 @@ var (
 	}
 
 	blacklistStructMethod = map[string]bool{
-		"Client.GetBaseURL":    true,
-		"Client.SetCredential": true,
+		"User.GetUnsubscribe": true,
 	}
 )
 
@@ -143,7 +142,9 @@ func ParseAccessors(files []*ast.File) (*accessorInfo, error) {
 					continue
 				}
 				// Check if "struct.method" is blacklisted.
-				if key := fmt.Sprintf("%v.Get%v", ts.Name, fieldName); blacklistStructMethod[key] {
+				key := fmt.Sprintf("%v.Get%v", ts.Name, fieldName)
+				log.Println(key)
+				if blacklistStructMethod[key] {
 					continue
 				}
 
@@ -278,7 +279,6 @@ func (t *dumper) dump() error {
 	if err := sourceTmpl.Execute(&buf, t); err != nil {
 		return err
 	}
-	log.Println(buf.String())
 	clean, err := format.Source(buf.Bytes())
 	if err != nil {
 		return err

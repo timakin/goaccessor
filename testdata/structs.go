@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+var (
+	blacklistStructs = []string{
+		"Client",
+		"BasicCredential",
+	}
+
+	blacklistStructMethod = []string{
+		"User.GetUnsubscribe",
+	}
+)
+
 // User represents user's in-game information
 type User struct {
 	AcceptedTOSVersion             *int      `json:"acceptedTOSVersion"`
