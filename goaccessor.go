@@ -48,12 +48,6 @@ func main() {
 	}
 
 	for pkgName, pkg := range pkgs {
-		d := &dumper{
-			filename: pkgName + fileSuffix,
-			Year:     time.Now().Year(),
-			Package:  pkgName,
-		}
-
 		var files []*ast.File
 		var ignoreStructs []string
 		for _, f := range pkg.Files {
@@ -79,6 +73,12 @@ func main() {
 		ai, err := ap.ParseAccessors(files)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		d := &dumper{
+			filename: pkgName + fileSuffix,
+			Year:     time.Now().Year(),
+			Package:  pkgName,
 		}
 		d.Imports = ai.Imports
 		d.Getters = ai.Getters
