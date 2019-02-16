@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   go-module: timakin/go-module@0.0.5
-  reviewdog: timakin/reviewdog@0.0.2
+  reviewdog: zchee/reviewdog@0.0.1
 
 executors:
   default:
@@ -28,24 +28,13 @@ jobs:
           project_name: goaccessor
       - test
 
-  review:
-    executor:
-      name: default
-    steps:
-      - checkout
-      - go-module/setup:
-          project_name: goaccessor
-      - reviewdog/review:
-          linters: "golang.org/x/lint/golint github.com/kisielk/errcheck"
-
 workflows:
   version: 2
   setup_and_deploy:
     jobs:
       - test
-      - review:
+      - reviewdog/run:
           context: reviewdog
-          filters:
-            branches:
-              ignore:
-                - master
+          tag: 1.11.1-stretch
+          working_directory: /go/src/github.com/timakin/goaccessor
+          linters: golang.org/x/lint/golint github.com/kisielk/errcheck
